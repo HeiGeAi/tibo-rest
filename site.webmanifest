@@ -1,0 +1,23 @@
+{
+  "name": "tibo.rest",
+  "short_name": "tibo.rest",
+  "description": "Unofficial Codex / ChatGPT Work Rest Room",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#0c0907",
+  "theme_color": "#0c0907",
+  "lang": "en",
+  "icons": [
+    {
+      "src": "./favicon.svg",
+      "type": "image/svg+xml",
+      "sizes": "any"
+    },
+    {
+      "src": "./apple-touch-icon.png",
+      "type": "image/png",
+      "sizes": "180x180"
+    }
+  ]
+}
