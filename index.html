@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>tibo.rest — usage exhausted. go rest.</title>
+  <meta name="description" content="Unofficial fan-made Codex / ChatGPT Work Rest Room. Sit with the wait for the next public Tibo (@thsottiaux) goodwill reset. Not affiliated with OpenAI." />
+  <meta name="robots" content="index,follow" />
+  <meta name="theme-color" content="#0c0907" />
+  <meta name="color-scheme" content="dark" />
+  <link rel="canonical" href="https://tibo.rest/" />
+
+  <meta property="og:type" content="website" />
+  <meta property="og:url" content="https://tibo.rest/" />
+  <meta property="og:site_name" content="tibo.rest" />
+  <meta property="og:title" content="tibo.rest — usage exhausted. go rest." />
+  <meta property="og:description" content="Fan lounge for Codex / ChatGPT Work humans waiting on a Tibo goodwill reset. Mood lamp, reset radar, prayer wall. Not affiliated with OpenAI." />
+  <meta property="og:locale" content="en_US" />
+  <meta property="og:locale:alternate" content="zh_CN" />
+  <meta property="og:image" content="https://tibo.rest/og.png" />
+  <meta property="og:image:width" content="1200" />
+  <meta property="og:image:height" content="630" />
+
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="tibo.rest — usage exhausted. go rest." />
+  <meta name="twitter:description" content="Unofficial Rest Room for people waiting on @thsottiaux goodwill resets." />
+  <meta name="twitter:image" content="https://tibo.rest/og.png" />
+
+  <link rel="icon" href="./favicon.svg" type="image/svg+xml" />
+  <link rel="icon" href="./favicon-32.png" type="image/png" sizes="32x32" />
+  <link rel="apple-touch-icon" href="./apple-touch-icon.png" />
+  <link rel="manifest" href="./site.webmanifest" />
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;0,700;1,500;1,600&family=Instrument+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet" />
+
+  <link rel="stylesheet" href="./src/styles.css" />
+</head>
+<body>
+  <!-- Cold-open curtain -->
+  <div id="curtain" class="curtain" aria-hidden="true">
+    <div class="curtain-panel curtain-panel--top"></div>
+    <div class="curtain-panel curtain-panel--bot"></div>
+    <p class="curtain-mark">tibo<span>.</span>rest</p>
+  </div>
+
+  <div class="grain" aria-hidden="true"></div>
+  <div class="film-grain" aria-hidden="true"></div>
+  <div class="ambient" aria-hidden="true"></div>
+  <div class="focal-layer" id="focal-layer" aria-hidden="true">
+    <canvas id="focal-canvas" class="focal-canvas" width="640" height="360"></canvas>
+    <div class="focal-wash"></div>
+  </div>
+
+  <header class="topbar">
+    <a class="brand" href="./">
+      <span class="brand-mark" aria-hidden="true"></span>
+      <span class="brand-text">tibo<span class="dot">.</span>rest</span>
+    </a>
+    <nav class="top-nav" aria-label="Sections">
+      <a href="#sign" data-nav="sign">Sign</a>
+      <a href="#radar" data-nav="radar">Radar</a>
+      <a href="#prayers" data-nav="prayers">Prayers</a>
+      <a href="#faq" data-nav="faq">FAQ</a>
+    </nav>
+    <span class="top-badge">not OpenAI</span>
+  </header>
+
+  <!-- Section progress pills (Forms / Zephyr tactile dock) -->
+  <nav class="section-pills" id="section-pills" aria-label="Section progress">
+    <a href="#sign" class="pill-dot" data-nav="sign" aria-label="Rest Room"><span></span></a>
+    <a href="#radar" class="pill-dot" data-nav="radar" aria-label="Radar"><span></span></a>
+    <a href="#prayers" class="pill-dot" data-nav="prayers" aria-label="Prayers"><span></span></a>
+    <a href="#faq" class="pill-dot" data-nav="faq" aria-label="FAQ"><span></span></a>
+  </nav>
+
+  <!-- COLD OPEN: typography as hero -->
+  <section class="cold-open" aria-labelledby="hero-title">
+    <p class="kicker">
+      <span class="kicker-bar" aria-hidden="true"></span>
+      Codex / ChatGPT Work · unofficial rest room
+    </p>
+    <h1 id="hero-title" class="hero-title">
+      <span class="line nowrap">usage exhausted.</span>
+      <span class="line go nowrap">go rest.</span>
+    </h1>
+    <p class="hero-cn" lang="zh-CN">
+      <span class="nowrap">额度用尽。</span>
+      <span class="nowrap">先歇着。</span>
+    </p>
+    <p class="lede">
+      A late-night hotel lobby for humans waiting on the next public
+      <strong>Tibo</strong>
+      (<a href="https://x.com/thsottiaux" target="_blank" rel="noopener">@thsottiaux</a>)
+      goodwill reset. Soft brass light. Honest radar. Local prayers only.
+      <span class="lede-zh" lang="zh-CN">额度见底时，来这间休息室坐一会儿。灯还亮着。</span>
+    </p>
+    <a class="scroll-cue" href="#sign">
+      <span>enter the lobby</span>
+      <span class="scroll-arrow" aria-hidden="true"></span>
+    </a>
+  </section>
+
+  <!-- BREATHE strip -->
+  <div class="breathe" aria-hidden="true">
+    <span>soft lamp</span>
+    <span class="sep">·</span>
+    <span>no quota peeking</span>
+    <span class="sep">·</span>
+    <span>local only</span>
+    <span class="sep">·</span>
+    <span>brass &amp; amber</span>
+  </div>
+
+  <!-- SIGNATURE: hotel-lobby RESTING sign + physical mood lamp -->
+  <section class="lobby" id="sign" aria-labelledby="sign-title">
+    <div class="lobby-head" data-reveal>
+      <p class="section-label">01 · Rest Room</p>
+      <h2 id="sign-title" class="section-title" data-reveal-lines>The lobby sign</h2>
+      <p class="section-sub" lang="zh-CN">旅馆大堂的休息灯牌 · 自上次确认重置起算</p>
+    </div>
+
+    <div class="lobby-stage" data-reveal data-reveal-delay="0.08">
+      <button type="button" id="mood-lamp" class="mood-lamp resting" aria-label="Toggle mood lamp brightness" title="Tap the lamp">
+        <span class="lamp-glow" aria-hidden="true"></span>
+        <span class="lamp-shade" aria-hidden="true"></span>
+        <span class="lamp-bulb" aria-hidden="true"></span>
+        <span class="lamp-stem" aria-hidden="true"></span>
+        <span class="lamp-base" aria-hidden="true"></span>
+      </button>
+
+      <div class="rest-sign" role="img" aria-labelledby="rest-sign-label">
+        <div class="rest-sign-frame">
+          <div class="rest-sign-inner">
+            <span class="rest-sign-kicker">tibo.rest · lobby</span>
+            <div class="rest-sign-word" id="rest-sign-label">RESTING</div>
+            <div class="rest-sign-time" id="rest-clock">—</div>
+            <div class="rest-sign-zh" id="status-zh" lang="zh-CN">正在点灯…</div>
+          </div>
+        </div>
+        <p class="rest-sign-meta" id="status-meta">Fetching public reset calendar…</p>
+      </div>
+    </div>
+
+    <div class="mood-row" data-reveal>
+      <div>
+        <span class="stat-label">mood</span>
+        <strong id="status-text" class="stat-value">Loading…</strong>
+      </div>
+      <div>
+        <span class="stat-label">checked · Beijing</span>
+        <strong id="checked-at" class="stat-value mono">—</strong>
+      </div>
+      <div>
+        <span class="stat-label">source</span>
+        <strong id="data-source" class="stat-value">—</strong>
+      </div>
+      <div>
+        <span class="stat-label">events</span>
+        <strong id="event-count" class="stat-value">0</strong>
+      </div>
+      <div class="mood-actions">
+        <button type="button" class="btn ghost pill" id="refresh-btn">Refresh radar</button>
+        <button type="button" class="btn-round" id="lamp-dim-btn" aria-label="Dim the lobby lamp" title="Dim lamp">
+          <span aria-hidden="true">+</span>
+        </button>
+      </div>
+    </div>
+
+    <blockquote class="lobby-quote" id="status-quote" hidden></blockquote>
+  </section>
+
+  <!-- Radar + Compose — asymmetric -->
+  <section class="deck" id="radar" aria-label="Radar and compose">
+    <article class="panel radar-panel" data-reveal>
+      <header class="panel-head">
+        <div>
+          <p class="section-label">02 · Reset Radar</p>
+          <h2 class="panel-title" data-reveal-lines>Public signals</h2>
+        </div>
+        <span class="panel-tag">direct_reset + reset_credit</span>
+      </header>
+      <ul class="timeline-list" id="timeline"></ul>
+      <p class="hint">
+        Live via
+        <a href="https://aihot.news/api/v1/codex-resets" target="_blank" rel="noopener">AIHOT API</a>
+        · calendar
+        <a href="https://aihot.news/codex-reset" target="_blank" rel="noopener">aihot.news/codex-reset</a>
+      </p>
+    </article>
+
+    <article class="panel compose-panel" data-reveal data-reveal-delay="0.1">
+      <header class="panel-head stack-head">
+        <p class="section-label">03 · Mercy draft</p>
+        <h2 class="panel-title" data-reveal-lines>Tweet at Tibo</h2>
+        <p class="hint tight">Be useful, not spammy. Specifics beat “please reset.”</p>
+      </header>
+      <label class="field-label" for="tweet-note">Optional note · 具体一点更好</label>
+      <input id="tweet-note" type="text" maxlength="180" autocomplete="off"
+        placeholder="e.g. long thread + images drains weekly limit in 20m" />
+      <textarea id="tweet-preview" readonly aria-label="Tweet preview"></textarea>
+      <div class="actions">
+        <button type="button" class="btn solid pill magnetic" id="compose-btn">Tweet at Tibo</button>
+        <button type="button" class="btn ghost pill" id="copy-btn">Copy text</button>
+      </div>
+      <p class="hint">Opens X intent · includes @thsottiaux + resting time + tibo.rest</p>
+    </article>
+  </section>
+
+  <!-- Prayers + vigil -->
+  <section class="chapel" id="prayers" aria-label="Prayers and vigil">
+    <article class="panel vigil-panel" data-reveal>
+      <p class="section-label">04 · Vigil</p>
+      <h2 class="panel-title" data-reveal-lines>I’m resting</h2>
+      <p class="hint tight">Soft local stamp. Stays on this device. No accounts.</p>
+      <div class="vigil-row">
+        <div>
+          <span class="stat-label">local stamp</span>
+          <strong id="vigil-status" class="stat-value">not stamped</strong>
+          <div class="meta mono" id="vigil-meta">Tap to leave a quiet mark.</div>
+        </div>
+        <button type="button" class="btn brass pill magnetic" id="vigil-btn">I’m resting</button>
+      </div>
+    </article>
+
+    <article class="panel prayer-panel" data-reveal data-reveal-delay="0.08">
+      <p class="section-label">05 · Prayer wall</p>
+      <h2 class="panel-title" data-reveal-lines>Leave a prayer</h2>
+      <textarea id="pray-input" maxlength="200" placeholder="Dear Tibo, my weekly bar is a flatline… / 亲爱的 Tibo，我的周额度已经躺平…"></textarea>
+      <div class="actions">
+        <button type="button" class="btn solid pill magnetic" id="pray-btn">Leave a prayer</button>
+        <button type="button" class="btn ghost pill" id="clear-prayers-btn">Clear local</button>
+      </div>
+      <ul class="prayers" id="prayer-list"></ul>
+      <p class="hint">localStorage only · never sent to a server · 只存在这台设备</p>
+    </article>
+  </section>
+
+  <!-- FAQ close -->
+  <section class="faq-block" id="faq" aria-labelledby="faq-title">
+    <header class="faq-head" data-reveal>
+      <p class="section-label">06 · Honesty</p>
+      <h2 id="faq-title" class="section-title" data-reveal-lines>FAQ · 诚实问答</h2>
+    </header>
+    <div class="faq-list" data-reveal>
+      <details open>
+        <summary>Is this affiliated with OpenAI?</summary>
+        <p>No. <strong>tibo.rest</strong> is an unofficial fan-made lounge. Not affiliated with OpenAI, Anthropic, or AIHOT. “Tibo” refers to Thibault Sottiaux (<a href="https://x.com/thsottiaux" target="_blank" rel="noopener">@thsottiaux</a>) as a community meme — we don’t speak for him.</p>
+      </details>
+      <details>
+        <summary>Can this see my Codex / ChatGPT Work quota?</summary>
+        <p>No. Personal balances only appear inside Codex / ChatGPT. This page never asks for logins, cookies, or API tokens. Your prayers and vigil stamp stay in <code>localStorage</code>.</p>
+      </details>
+      <details>
+        <summary>Where does the reset radar come from?</summary>
+        <p>Public calendar events from <a href="https://aihot.news/codex-reset" target="_blank" rel="noopener">AIHOT</a> via <code>GET /api/v1/codex-resets</code> (CORS open, ETag polling ≥5 min). If the live API is unreachable, we show a shipped snapshot. We do not scrape competitor HTML.</p>
+      </details>
+      <details>
+        <summary>Do you predict the next reset?</summary>
+        <p>No. We show confirmed public signals (<code>direct_reset</code>, <code>reset_credit</code>) and how long since the last confirmed global reset. Anything else is lounge banter — not a forecast you should bet on.</p>
+      </details>
+      <details>
+        <summary>中文：这是什么？</summary>
+        <p>这是给 Codex / ChatGPT Work 额度用尽时的非官方休息室。雷达数据来自 AIHOT 公开日历；许愿墙与「我在歇」标记只存在你的浏览器本地。与 OpenAI 无关，也不提供预测承诺。</p>
+      </details>
+      <details>
+        <summary>Commercial use of AIHOT data?</summary>
+        <p>This site is personal / non-commercial fan use with attribution. AIHOT requires written authorization for commercial reuse — see their <a href="https://aihot.news/terms" target="_blank" rel="noopener">terms</a>.</p>
+      </details>
+    </div>
+  </section>
+
+  <footer class="footer" data-reveal>
+    <p><strong>tibo.rest</strong> is an unofficial fan toy · MIT licensed · not affiliated with OpenAI, Anthropic, or AIHOT.</p>
+    <p>
+      Reset calendar data © respective authors; aggregated via
+      <a href="https://aihot.news/codex-reset" target="_blank" rel="noopener">AIHOT</a>
+      (non-commercial fan use; see their
+      <a href="https://aihot.news/terms" target="_blank" rel="noopener">terms</a>).
+      Commercial reuse of AIHOT data needs their written authorization.
+    </p>
+    <p>Be kind on X. Specifics &gt; spam. · 在 X 上请具体、礼貌，别刷屏。</p>
+  </footer>
+
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+  <script type="module" src="./src/main.js"></script>
+</body>
+</html>

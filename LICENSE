@@ -1,0 +1,36 @@
+MIT License
+
+Copyright (c) 2026 tibo.rest contributors
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+
+-------------------------------------------------------------------------------
+DISCLAIMER
+
+tibo.rest is an unofficial fan-made website. It is NOT affiliated with,
+endorsed by, or sponsored by OpenAI, Anthropic, AIHOT, or Thibault “Tibo”
+Sottiaux (@thsottiaux).
+
+Reset calendar data may be loaded from AIHOT’s public API
+(https://aihot.news/api/v1/codex-resets). AIHOT data is for personal /
+non-commercial fan use with attribution. Commercial reuse of AIHOT data
+requires AIHOT’s written authorization — see https://aihot.news/terms.
+
+This site does not access OpenAI accounts, does not scrape personal tokens,
+and does not claim to predict future resets as truth.
