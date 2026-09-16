@@ -1,0 +1,647 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NIGHTSHIFT // 夜班 — 你睡觉，它上夜班</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@500;600;700&family=JetBrains+Mono:wght@400;500;700&family=Noto+Sans+SC:wght@400;500;700;900&family=Space+Grotesk:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#07070d;
+  --bg2:#0c0c16;
+  --mag:#ff2e97;
+  --cyan:#00e5ff;
+  --acid:#f9f871;
+  --ink:#e8e8f0;
+  --dim:#6a6a82;
+  --line:rgba(106,106,130,.18);
+  --disp:'Chakra Petch','Noto Sans SC',"PingFang SC","Microsoft YaHei","Hiragino Sans GB",Helvetica,Arial,sans-serif;
+  --body:'Space Grotesk','Noto Sans SC',"PingFang SC","Microsoft YaHei","Hiragino Sans GB",sans-serif;
+  --mono:'JetBrains Mono',"PingFang SC","Microsoft YaHei","Hiragino Sans GB",monospace;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{
+  background:var(--bg);
+  color:var(--ink);
+  font-family:var(--body);
+  line-height:1.55;
+  overflow-x:hidden;
+  -webkit-font-smoothing:antialiased;
+}
+/* scanline overlay */
+body::after{
+  content:"";
+  position:fixed;inset:0;
+  pointer-events:none;z-index:9999;
+  background:repeating-linear-gradient(
+    0deg,
+    rgba(0,0,0,0) 0px,
+    rgba(0,0,0,0) 2px,
+    rgba(0,0,0,.10) 3px,
+    rgba(0,0,0,0) 4px
+  );
+}
+::selection{background:var(--mag);color:#07070d}
+
+.wrap{max-width:1180px;margin:0 auto;padding:0 28px}
+.mono{font-family:var(--mono);letter-spacing:.06em}
+.hud{
+  font-family:var(--mono);
+  font-size:.72rem;
+  letter-spacing:.22em;
+  text-transform:uppercase;
+  color:var(--cyan);
+}
+.hud.mag{color:var(--mag)}
+.hud.dim{color:var(--dim)}
+
+/* ===== top status bar ===== */
+.topbar{
+  position:fixed;top:0;left:0;right:0;z-index:200;
+  display:flex;align-items:center;justify-content:space-between;
+  padding:14px 28px;
+  background:linear-gradient(180deg,rgba(7,7,13,.98),rgba(7,7,13,.7) 70%,transparent);
+}
+.brand{display:flex;align-items:center;gap:10px;font-family:var(--disp);font-weight:700;letter-spacing:.14em;font-size:.92rem}
+.dot{width:9px;height:9px;border-radius:50%;background:var(--mag);box-shadow:0 0 12px var(--mag),0 0 22px var(--mag)}
+.topbar .right{display:flex;gap:22px;align-items:center}
+.topbar .right .hud{display:none}
+@media(min-width:760px){.topbar .right .hud{display:inline}}
+
+/* ===== HERO ===== */
+.hero{
+  position:relative;
+  min-height:100svh;
+  display:flex;flex-direction:column;justify-content:center;
+  padding:120px 0 70px;
+  overflow:hidden;
+}
+.hero-glow{
+  position:absolute;
+  width:760px;height:760px;
+  right:-180px;top:-120px;
+  background:radial-gradient(circle,rgba(255,46,151,.30),transparent 62%);
+  filter:blur(20px);
+  pointer-events:none;
+}
+.hero-glow2{
+  position:absolute;
+  width:560px;height:560px;
+  left:-200px;bottom:-160px;
+  background:radial-gradient(circle,rgba(0,229,255,.22),transparent 62%);
+  filter:blur(20px);
+  pointer-events:none;
+}
+.hero .wrap{position:relative;z-index:2}
+.kicker{display:flex;align-items:center;gap:14px;margin-bottom:26px}
+.kicker .bar{width:46px;height:1px;background:var(--mag);box-shadow:0 0 8px var(--mag)}
+
+.title{
+  font-family:var(--disp);
+  font-weight:700;
+  line-height:.92;
+  letter-spacing:-.01em;
+  font-size:clamp(3.6rem,13vw,9.5rem);
+  margin:0 0 6px;
+  position:relative;
+  display:inline-block;
+}
+.title .cn{
+  display:block;
+  font-family:'Noto Sans SC',"PingFang SC","Microsoft YaHei","Hiragino Sans GB",sans-serif;
+  font-weight:900;
+  font-size:clamp(2.4rem,8vw,6rem);
+  letter-spacing:.04em;
+  color:var(--ink);
+  margin-top:6px;
+}
+.title .cn b{color:var(--cyan);text-shadow:0 0 18px rgba(0,229,255,.6)}
+
+/* glitch */
+.glitch{
+  color:var(--ink);
+  text-shadow:0 0 18px rgba(255,46,151,.45);
+  position:relative;
+}
+.glitch::before,.glitch::after{
+  content:attr(data-text);
+  position:absolute;left:0;top:0;
+  width:100%;overflow:hidden;
+}
+.glitch::before{color:var(--mag);clip-path:inset(0 0 55% 0);animation:gl1 3.4s infinite linear alternate-reverse}
+.glitch::after{color:var(--cyan);clip-path:inset(60% 0 0 0);animation:gl2 2.7s infinite linear alternate-reverse}
+@keyframes gl1{
+  0%,82%,100%{transform:translate(0,0)}
+  84%{transform:translate(-3px,1px)}
+  88%{transform:translate(2px,-1px)}
+  92%{transform:translate(-2px,0)}
+}
+@keyframes gl2{
+  0%,80%,100%{transform:translate(0,0)}
+  85%{transform:translate(3px,-1px)}
+  90%{transform:translate(-2px,1px)}
+}
+
+.hero-sub{
+  max-width:540px;
+  margin:30px 0 0;
+  font-size:clamp(1rem,1.5vw,1.18rem);
+  color:#c5c5d6;
+}
+.hero-sub strong{color:var(--ink);font-weight:700}
+
+.hero-row{display:flex;flex-wrap:wrap;gap:42px;align-items:flex-end;margin-top:8px}
+.hero-left{flex:1 1 460px;min-width:280px}
+
+/* terminal card */
+.term{
+  flex:1 1 320px;min-width:280px;max-width:430px;
+  background:linear-gradient(160deg,rgba(12,12,22,.92),rgba(7,7,13,.92));
+  border:1px solid var(--line);
+  border-top:1px solid rgba(255,46,151,.35);
+  box-shadow:0 0 0 1px rgba(255,46,151,.06),0 24px 60px rgba(0,0,0,.6),inset 0 0 60px rgba(0,229,255,.03);
+  font-family:var(--mono);
+  font-size:.82rem;
+  position:relative;
+}
+.term-head{
+  display:flex;align-items:center;gap:8px;
+  padding:11px 14px;
+  border-bottom:1px solid var(--line);
+  color:var(--dim);font-size:.7rem;letter-spacing:.12em;text-transform:uppercase;
+}
+.term-head .lights{display:flex;gap:6px;margin-right:6px}
+.term-head .lights i{width:8px;height:8px;border-radius:50%;display:block}
+.l1{background:var(--mag)}.l2{background:var(--acid)}.l3{background:var(--cyan)}
+.term-body{padding:16px 16px 18px;min-height:188px}
+.term-body .ln{display:block;white-space:pre-wrap;margin:2px 0;color:#9a9ab0}
+.term-body .ln .p{color:var(--mag)}
+.term-body .ln .ok{color:var(--acid)}
+.term-body .ln .c{color:var(--cyan)}
+.cta-row{display:flex;flex-wrap:wrap;gap:16px;margin-top:42px;align-items:center}
+
+.btn{
+  font-family:var(--mono);
+  font-weight:700;
+  letter-spacing:.08em;
+  font-size:.86rem;
+  padding:15px 26px;
+  border:none;cursor:pointer;
+  background:var(--mag);
+  color:#07070d;
+  text-decoration:none;
+  display:inline-block;
+  clip-path:polygon(0 0,100% 0,100% 70%,calc(100% - 14px) 100%,0 100%);
+  transition:transform .15s,box-shadow .15s,background .15s;
+  box-shadow:0 0 22px rgba(255,46,151,.45);
+}
+.btn:hover{background:#ff5cac;transform:translateY(-2px);box-shadow:0 0 34px rgba(255,46,151,.7)}
+.btn.ghost{
+  background:transparent;color:var(--cyan);
+  box-shadow:inset 0 0 0 1px var(--cyan);
+}
+.btn.ghost:hover{background:rgba(0,229,255,.08);box-shadow:inset 0 0 0 1px var(--cyan),0 0 22px rgba(0,229,255,.3)}
+
+/* ===== STAT / breath ===== */
+.stats{
+  border-top:1px solid var(--line);
+  border-bottom:1px solid var(--line);
+  padding:34px 0;
+}
+.stats .wrap{display:flex;flex-wrap:wrap;gap:14px 44px;align-items:baseline}
+.stat-lead{font-family:var(--mono);font-size:.72rem;letter-spacing:.2em;color:var(--dim);text-transform:uppercase;margin-right:14px}
+.stat{display:flex;flex-direction:column;gap:2px}
+.stat b{font-family:var(--disp);font-weight:700;font-size:1.9rem;color:var(--ink);line-height:1}
+.stat b em{font-style:normal;color:var(--cyan)}
+.stat span{font-size:.78rem;color:var(--dim);font-family:var(--mono);letter-spacing:.04em}
+
+/* ===== HOW (asymmetric phases) ===== */
+.how{padding:96px 0 60px;position:relative}
+.section-head{margin-bottom:60px;max-width:680px}
+.section-head h2{
+  font-family:var(--disp);font-weight:700;
+  font-size:clamp(2.1rem,5vw,3.4rem);line-height:1.04;letter-spacing:-.01em;
+}
+.section-head h2 .cn{font-family:'Noto Sans SC',"PingFang SC","Microsoft YaHei","Hiragino Sans GB",sans-serif;font-weight:900;display:block;font-size:clamp(1.4rem,3.2vw,2.1rem);color:var(--dim);margin-top:10px}
+.section-head h2 mark{background:none;color:var(--mag);text-shadow:0 0 14px rgba(255,46,151,.5)}
+
+.phases{display:flex;flex-direction:column;gap:30px}
+.phase{
+  position:relative;
+  border:1px solid var(--line);
+  background:linear-gradient(150deg,rgba(12,12,22,.6),rgba(7,7,13,.3));
+  padding:30px 32px 34px;
+  opacity:0;transform:translateY(26px);
+  transition:opacity .7s ease,transform .7s ease;
+}
+.phase.in{opacity:1;transform:none}
+.phase .pnum{
+  font-family:var(--disp);font-weight:700;
+  font-size:clamp(3rem,7vw,5.4rem);line-height:.8;
+  color:transparent;-webkit-text-stroke:1px var(--dim);
+  position:absolute;
+}
+.phase .ptime{font-family:var(--mono);font-size:.72rem;letter-spacing:.16em;text-transform:uppercase}
+.phase h3{font-family:'Noto Sans SC',"PingFang SC","Microsoft YaHei","Hiragino Sans GB",sans-serif;font-weight:900;font-size:clamp(1.4rem,3vw,2rem);margin:6px 0 10px}
+.phase p{color:#b6b6c8;max-width:520px;font-size:.98rem}
+.phase .tag{font-family:var(--mono);font-size:.7rem;letter-spacing:.1em;color:var(--dim);margin-top:16px;display:inline-block}
+
+/* asymmetry via offset + accent edge */
+.phase.p1{margin-right:auto;width:min(100%,640px);border-left:2px solid var(--mag)}
+.phase.p1 .ptime{color:var(--mag)}
+.phase.p2{margin-left:auto;width:min(100%,760px);border-left:2px solid var(--cyan)}
+.phase.p2 .ptime{color:var(--cyan)}
+.phase.p2 .pnum{-webkit-text-stroke:1px var(--cyan);opacity:.5}
+.phase.p3{margin-right:auto;margin-left:6%;width:min(100%,580px);border-left:2px solid var(--acid)}
+.phase.p3 .ptime{color:var(--acid)}
+.phase.p3 .pnum{-webkit-text-stroke:1px var(--acid);opacity:.55}
+.phase .body{position:relative;z-index:2;padding-left:0}
+@media(min-width:760px){
+  .phase{padding:34px 40px 38px 130px}
+  .phase .pnum{left:30px;top:50%;transform:translateY(-50%)}
+}
+@media(max-width:759px){
+  .phase .pnum{position:static;display:block;margin-bottom:8px}
+}
+
+/* ===== CLIMAX / signature: grid horizon + live terminal ===== */
+.climax{
+  position:relative;
+  padding:110px 0 120px;
+  overflow:hidden;
+  border-top:1px solid var(--line);
+}
+.horizon{
+  position:absolute;left:50%;bottom:0;
+  transform:translateX(-50%);
+  width:200%;height:480px;
+  perspective:340px;
+  pointer-events:none;
+  z-index:0;
+}
+.horizon .grid{
+  position:absolute;inset:0;top:auto;height:100%;
+  transform:rotateX(72deg);
+  transform-origin:bottom center;
+  background-image:
+    linear-gradient(rgba(0,229,255,.55) 1px,transparent 1px),
+    linear-gradient(90deg,rgba(255,46,151,.45) 1px,transparent 1px);
+  background-size:64px 64px;
+  mask-image:linear-gradient(transparent,#000 65%);
+  -webkit-mask-image:linear-gradient(transparent,#000 65%);
+}
+.horizon .sun{
+  position:absolute;left:50%;bottom:120px;transform:translateX(-50%);
+  width:300px;height:300px;border-radius:50%;
+  background:radial-gradient(circle at 50% 60%,rgba(255,46,151,.5),rgba(255,46,151,0) 60%);
+  filter:blur(4px);
+}
+.climax .wrap{position:relative;z-index:3}
+.climax-head{text-align:center;margin-bottom:50px}
+.climax-head .hud{display:inline-block;margin-bottom:18px}
+.climax-head h2{
+  font-family:var(--disp);font-weight:700;
+  font-size:clamp(2.4rem,7vw,5rem);line-height:1;letter-spacing:-.02em;
+}
+.climax-head h2 .cn{display:block;font-family:'Noto Sans SC',"PingFang SC","Microsoft YaHei","Hiragino Sans GB",sans-serif;font-weight:900;font-size:clamp(1.3rem,3vw,1.9rem);color:#c5c5d6;margin-top:14px;letter-spacing:.02em}
+
+/* live terminal */
+.live{
+  max-width:720px;margin:0 auto;
+  background:rgba(5,5,11,.96);
+  border:1px solid rgba(0,229,255,.28);
+  box-shadow:0 0 0 1px rgba(0,229,255,.05),0 30px 80px rgba(0,0,0,.7),inset 0 0 80px rgba(255,46,151,.04);
+  font-family:var(--mono);
+}
+.live-head{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:12px 16px;border-bottom:1px solid rgba(0,229,255,.18);
+  font-size:.7rem;letter-spacing:.14em;text-transform:uppercase;color:var(--dim);
+}
+.live-head .agent{color:var(--cyan)}
+.live-body{
+  padding:18px 18px 22px;
+  min-height:300px;
+  font-size:.82rem;line-height:1.85;
+}
+.live-body .row{display:block;white-space:pre-wrap;color:#9a9ab0}
+.live-body .p{color:var(--mag)}
+.live-body .ok{color:var(--acid)}
+.live-body .c{color:var(--cyan)}
+.live-body .d{color:var(--dim)}
+.caret{display:inline-block;width:9px;height:1.05em;background:var(--cyan);vertical-align:-2px;margin-left:2px;box-shadow:0 0 8px var(--cyan);animation:blink 1s steps(1) infinite}
+@keyframes blink{50%{opacity:0}}
+
+/* ===== CTA close ===== */
+.cta{padding:104px 0 60px;text-align:center;position:relative}
+.cta .big{
+  font-family:'Noto Sans SC',"PingFang SC","Microsoft YaHei","Hiragino Sans GB",sans-serif;font-weight:900;
+  font-size:clamp(2.2rem,8vw,5.4rem);line-height:1.02;letter-spacing:.02em;
+}
+.cta .big .mag{color:var(--mag);text-shadow:0 0 22px rgba(255,46,151,.55)}
+.cta .big .cy{color:var(--cyan);text-shadow:0 0 22px rgba(0,229,255,.45)}
+.cta p{color:var(--dim);max-width:440px;margin:24px auto 0;font-size:.98rem}
+.cmd{
+  display:inline-flex;align-items:center;gap:14px;
+  margin-top:40px;
+  background:rgba(12,12,22,.8);
+  border:1px solid var(--line);
+  padding:16px 20px;
+  font-family:var(--mono);font-size:.92rem;
+  cursor:pointer;
+  transition:border-color .2s,box-shadow .2s;
+}
+.cmd:hover{border-color:var(--cyan);box-shadow:0 0 24px rgba(0,229,255,.22)}
+.cmd .sel{color:var(--mag)}
+.cmd .txt{color:var(--ink)}
+.cmd .copy{font-size:.68rem;letter-spacing:.12em;color:var(--dim);text-transform:uppercase;border-left:1px solid var(--line);padding-left:14px}
+.cmd.copied .copy{color:var(--acid)}
+
+footer{
+  border-top:1px solid var(--line);
+  margin-top:80px;padding:34px 0;
+}
+footer .wrap{display:flex;flex-wrap:wrap;gap:14px;justify-content:space-between;align-items:center;color:var(--dim);font-family:var(--mono);font-size:.74rem;letter-spacing:.08em}
+footer .brand2{font-family:var(--disp);font-weight:700;color:var(--ink);letter-spacing:.14em}
+
+@media (prefers-reduced-motion: reduce){
+  .glitch::before,.glitch::after{display:none}
+  .caret{animation:none}
+  .phase{opacity:1;transform:none;transition:none}
+}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="brand"><span class="dot"></span>NIGHTSHIFT<span class="hud" style="color:var(--dim)">//夜班</span></div>
+  <div class="right">
+    <span class="hud">// SYS_ONLINE</span>
+    <span class="hud mag" id="clock">03:47 AM</span>
+  </div>
+</div>
+
+<!-- ===== HERO ===== -->
+<header class="hero">
+  <div class="hero-glow"></div>
+  <div class="hero-glow2"></div>
+  <div class="wrap">
+    <div class="kicker">
+      <span class="bar"></span>
+      <span class="hud">AUTONOMOUS CODING AGENT · v0.9 NIGHTLY</span>
+    </div>
+
+    <div class="hero-row">
+      <div class="hero-left">
+        <h1 class="title">
+          <span class="glitch" data-text="NIGHTSHIFT">NIGHTSHIFT</span>
+          <span class="cn">你睡觉，<b>它上夜班</b></span>
+        </h1>
+        <p class="hero-sub">
+          一个会写代码的 AI agent。<strong>你下班关灯，它接班开干。</strong>
+          跑测试、修 bug、补文档、提 PR，全程自己来。
+          第二天你打开电脑，活已经干完了，就等你看一眼合不合理。
+        </p>
+        <div class="cta-row">
+          <a href="#join" class="btn">申请夜班名额 →</a>
+          <a href="#how" class="btn ghost">看它怎么干活</a>
+        </div>
+      </div>
+
+      <div class="term" aria-hidden="true">
+        <div class="term-head">
+          <span class="lights"><i class="l1"></i><i class="l2"></i><i class="l3"></i></span>
+          <span>shift.log — local</span>
+        </div>
+        <div class="term-body">
+<span class="ln"><span class="dim mono" style="color:#4a4a60">[23:58]</span> <span class="c">human</span> 关机睡了。</span>
+<span class="ln"><span class="dim mono" style="color:#4a4a60">[00:01]</span> <span class="p">nightshift</span> 接管会话，开始扫 backlog…</span>
+<span class="ln"><span class="dim mono" style="color:#4a4a60">[00:01]</span> 找到 12 个待办，按风险排序。</span>
+<span class="ln"><span class="dim mono" style="color:#4a4a60">[02:14]</span> <span class="ok">✓</span> 修复登录态丢失 (#341)</span>
+<span class="ln"><span class="dim mono" style="color:#4a4a60">[03:47]</span> 正在重构数据层<span class="caret"></span></span>
+        </div>
+      </div>
+    </div>
+  </div>
+</header>
+
+<!-- ===== STAT breath ===== -->
+<section class="stats">
+  <div class="wrap">
+    <span class="stat-lead">// 上一班的成绩单</span>
+    <div class="stat"><b><em>8</em>h</b><span>无人值守作业</span></div>
+    <div class="stat"><b>47<em>+</em></b><span>测试一次通过</span></div>
+    <div class="stat"><b><em>0</em></b><span>需要你熬夜</span></div>
+    <div class="stat"><b>1</b><span>等你审的 PR</span></div>
+  </div>
+</section>
+
+<!-- ===== HOW asymmetric ===== -->
+<section class="how" id="how">
+  <div class="wrap">
+    <div class="section-head">
+      <span class="hud mag">// THE NIGHT SHIFT · 03 PHASES</span>
+      <h2 style="margin-top:18px">It doesn't sleep.<mark>So you can.</mark>
+        <span class="cn">一晚分三班倒，它一个人全包了</span>
+      </h2>
+    </div>
+
+    <div class="phases">
+      <article class="phase p1">
+        <span class="pnum">01</span>
+        <div class="body">
+          <span class="ptime mono">00:00 — 接班 · INTAKE</span>
+          <h3>它先读懂你今天卡在哪</h3>
+          <p>翻 commit、翻你白天写到一半的 TODO、翻 issue 列表，把你脑子里那点没说出口的上下文捞出来。不瞎干，先搞清楚"今晚到底该干什么、先干哪个"。</p>
+          <span class="tag mono">scan_repo · read_context · plan</span>
+        </div>
+      </article>
+
+      <article class="phase p2">
+        <span class="pnum">02</span>
+        <div class="body">
+          <span class="ptime mono">01:00 — 主班 · BUILD</span>
+          <h3>动手写，写完自己验</h3>
+          <p>真的去改代码，不是给你贴一段建议让你自己复制。每改一处就跑一次测试，红了就回去重来，绿了才往下走。它跟自己较劲一整夜，你一点都感觉不到。</p>
+          <span class="tag mono">edit · run_tests · self_review · loop</span>
+        </div>
+      </article>
+
+      <article class="phase p3">
+        <span class="pnum">03</span>
+        <div class="body">
+          <span class="ptime mono">06:30 — 交班 · HANDOFF</span>
+          <h3>整理好，等你一句话</h3>
+          <p>把这一夜干的事拆成干净的 commit，写好 PR 说明，标出它拿不准、需要你拍板的地方。你早上端着咖啡扫一眼，点 merge 或者打回，整个流程不超过五分钟。</p>
+          <span class="tag mono">commit · open_pr · flag_for_human</span>
+        </div>
+      </article>
+    </div>
+  </div>
+</section>
+
+<!-- ===== CLIMAX / signature ===== -->
+<section class="climax">
+  <div class="horizon" aria-hidden="true">
+    <div class="sun"></div>
+    <div class="grid"></div>
+  </div>
+  <div class="wrap">
+    <div class="climax-head">
+      <span class="hud">// LIVE FEED · 实时夜班日志</span>
+      <h2>现在，它正在干活
+        <span class="cn">这不是录像，是它此刻的工作流</span>
+      </h2>
+    </div>
+
+    <div class="live" aria-hidden="true">
+      <div class="live-head">
+        <span class="agent">● nightshift@dev</span>
+        <span>session #0917 · branch: night/refactor</span>
+      </div>
+      <div class="live-body" id="liveBody"></div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== CTA close ===== -->
+<section class="cta" id="join">
+  <div class="wrap">
+    <p class="hud dim" style="margin-bottom:22px;color:var(--dim)">// EARLY ACCESS · 名额放出中</p>
+    <h2 class="big">下班别再带活回家<br><span class="mag">关灯</span>，把代码<span class="cy">交给夜班</span></h2>
+    <p>内测分批放号。装上它，今晚就开始你的第一个夜班。</p>
+    <div class="cmd" id="copyCmd" title="点击复制">
+      <span class="sel">$</span>
+      <span class="txt">npx nightshift init --shift=tonight</span>
+      <span class="copy">COPY</span>
+    </div>
+    <div style="margin-top:36px">
+      <a href="#" class="btn">领取内测名额 →</a>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap">
+    <span class="brand2">NIGHTSHIFT // 夜班</span>
+    <span>// 你睡觉，它上夜班 · forged with HeiGe-UI</span>
+    <span>03:47 AM · STILL WORKING</span>
+  </div>
+</footer>
+
+<script>
+(function(){
+  var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  /* live clock in HUD */
+  var clock = document.getElementById('clock');
+  function tick(){
+    var d = new Date();
+    var h = d.getHours(), m = d.getMinutes();
+    var ap = h < 12 ? 'AM' : 'PM';
+    var hh = h % 12; if(hh===0) hh=12;
+    clock.textContent = (hh<10?'0'+hh:hh)+':'+(m<10?'0'+m:m)+' '+ap;
+  }
+  tick();
+  var clockTimer = setInterval(tick, 30000);
+  document.addEventListener('visibilitychange', function(){
+    if (document.hidden){
+      if (clockTimer){ clearInterval(clockTimer); clockTimer = null; }
+    } else if (!clockTimer){
+      tick();
+      clockTimer = setInterval(tick, 30000);
+    }
+  });
+
+  /* scroll reveal for phases, with force-reveal fallback */
+  var phases = document.querySelectorAll('.phase');
+  function revealAll(){ phases.forEach(function(p){ p.classList.add('in'); }); }
+  if(reduce || !('IntersectionObserver' in window)){
+    revealAll();
+  } else {
+    var io = new IntersectionObserver(function(entries){
+      entries.forEach(function(e){ if(e.isIntersecting){ e.target.classList.add('in'); io.unobserve(e.target); } });
+    }, {threshold:.18});
+    phases.forEach(function(p){ io.observe(p); });
+    setTimeout(revealAll, 1500); // screenshot-safe fallback
+  }
+
+  /* live typing terminal */
+  var body = document.getElementById('liveBody');
+  var lines = [
+    {t:'02:58', cls:'p',  txt:'> 拉起测试套件 spec/auth ...'},
+    {t:'02:59', cls:'ok', txt:'  ✓ 47 passed  ✗ 0 failed  · 2.4s'},
+    {t:'03:02', cls:'',   txt:'> 检测到 session 在并发下偶发丢失'},
+    {t:'03:11', cls:'c',  txt:'  ↺ 重写 token 刷新逻辑，加互斥锁'},
+    {t:'03:24', cls:'ok', txt:'  ✓ 复测 200 次，0 复现'},
+    {t:'03:33', cls:'',   txt:'> 顺手补了缺失的类型声明 (12 处)'},
+    {t:'03:41', cls:'p',  txt:'> git commit -m "fix: 并发下登录态丢失"'},
+    {t:'03:47', cls:'c',  txt:'  ⤴ 已推送 night/refactor，准备开 PR'},
+    {t:'06:30', cls:'ok', txt:'  ☼ 交班完成 · 1 个 PR 等你 review'}
+  ];
+
+  function lineHTML(l){
+    return '<span class="d">['+l.t+']</span> <span class="'+l.cls+'">'+l.txt+'</span>';
+  }
+
+  if(reduce){
+    // static filled state
+    body.innerHTML = lines.map(function(l){ return '<span class="row">'+lineHTML(l)+'</span>'; }).join('')
+      + '<span class="row"><span class="d">[06:31]</span> 等待人工确认<span class="caret"></span></span>';
+    return;
+  }
+
+  // pre-fill first lines instantly so a no-scroll screenshot isn't blank
+  var prefill = 4;
+  var html = '';
+  for(var i=0;i<prefill;i++){ html += '<span class="row">'+lineHTML(lines[i])+'</span>'; }
+  body.innerHTML = html;
+
+  var idx = prefill;
+  function typeNext(){
+    if(idx >= lines.length){
+      body.insertAdjacentHTML('beforeend','<span class="row"><span class="d">[06:31]</span> 等待人工确认<span class="caret"></span></span>');
+      return;
+    }
+    var l = lines[idx++];
+    var row = document.createElement('span');
+    row.className = 'row';
+    body.appendChild(row);
+    var full = lineHTML(l);
+    // type the visible text portion progressively via plain text, then swap to colored html
+    var plain = '['+l.t+'] '+l.txt;
+    var j = 0;
+    (function type(){
+      if(j <= plain.length){
+        row.textContent = plain.slice(0,j) + '▍';
+        j++;
+        setTimeout(type, 14);
+      } else {
+        row.innerHTML = full;
+        setTimeout(typeNext, 420);
+      }
+    })();
+  }
+  // start typing the remaining lines shortly after load
+  setTimeout(typeNext, 700);
+
+  /* copy command */
+  var cmd = document.getElementById('copyCmd');
+  cmd.addEventListener('click', function(){
+    var text = 'npx nightshift init --shift=tonight';
+    var done = function(){
+      cmd.classList.add('copied');
+      cmd.querySelector('.copy').textContent = 'COPIED ✓';
+      setTimeout(function(){ cmd.classList.remove('copied'); cmd.querySelector('.copy').textContent='COPY'; }, 1800);
+    };
+    if(navigator.clipboard && navigator.clipboard.writeText){
+      navigator.clipboard.writeText(text).then(done).catch(done);
+    } else { done(); }
+  });
+})();
+</script>
+</body>
+</html>
