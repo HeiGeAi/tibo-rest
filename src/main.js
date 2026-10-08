@@ -20,6 +20,7 @@ const state = {
   payload: null,
   source: "none",
   etag: null,
+  livePayload: null,
   lampDimmed: false,
 };
 
@@ -326,16 +327,21 @@ async function loadData({ silent = false } = {}) {
   $("refresh-btn").disabled = true;
   try {
     const headers = { Accept: "application/json" };
-    if (state.etag) headers["If-None-Match"] = state.etag;
+    if (state.etag && state.livePayload != null) headers["If-None-Match"] = state.etag;
     const live = await fetchJson(API_URL, {
       headers,
       mode: "cors",
       cache: "no-cache",
     });
     if (live.notModified) {
+      if (state.livePayload == null) throw new Error("HTTP 304 without a cached live payload");
+      state.payload = state.livePayload;
+      state.source = "live";
+      renderStatus(state.payload);
       if (!silent) toast("Radar already fresh");
       return;
     }
+    state.livePayload = live.data;
     state.payload = live.data;
     state.source = "live";
     state.etag = live.res.headers.get("ETag");
