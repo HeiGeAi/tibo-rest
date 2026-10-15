@@ -2,6 +2,8 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import vm from 'node:vm';
 import test from 'node:test';
+import http from 'node:http';
+import { once } from 'node:events';
 const source = fs.readFileSync(new URL('../src/main.js', import.meta.url), 'utf8');
 const loader = source.slice(source.indexOf('async function fetchJson('), source.indexOf('function wireUi('));
 const ok = (data, etag = null) => ({ status: 200, ok: true, json: async () => data, headers: { get: () => etag } });
@@ -60,4 +62,38 @@ test('later 200 replaces cached live data and ETag, including a missing ETag', a
   assert.equal(ctx.state.livePayload, latest);
   assert.equal(ctx.state.etag, null);
   assert.equal(calls.at(-1).opts.headers['If-None-Match'], undefined);
+});
+
+
+test('real HTTP ETag recovery replaces the fallback after a 304 response', async (t) => {
+  let liveRequests = 0;
+  const receivedEtags = [];
+  const server = http.createServer((req, res) => {
+    res.setHeader('Content-Type', 'application/json');
+    if (req.url === '/snapshot') return res.end(JSON.stringify({ events: ['old snapshot'] }));
+    receivedEtags.push(req.headers['if-none-match']);
+    liveRequests++;
+    if (liveRequests === 2) { res.writeHead(503); return res.end('{}'); }
+    if (liveRequests === 3) { res.writeHead(304); return res.end(); }
+    res.setHeader('ETag', '"live-v1"');
+    res.end(JSON.stringify({ events: ['fresh live'] }));
+  });
+  server.listen(0, '127.0.0.1');
+  await once(server, 'listening');
+  t.after(() => new Promise((resolve) => {
+    server.close(resolve);
+    server.closeAllConnections();
+  }));
+  const base = `http://127.0.0.1:${server.address().port}`;
+  const { ctx, rendered } = setup([]);
+  Object.assign(ctx, { fetch, API_URL: base + '/live', FALLBACK_URL: base + '/snapshot' });
+  await ctx.loadData();
+  await ctx.loadData();
+  assert.equal(ctx.state.source, 'fallback');
+  assert.equal(ctx.state.payload.events[0], 'old snapshot');
+  await ctx.loadData();
+  assert.equal(ctx.state.source, 'live');
+  assert.equal(ctx.state.payload.events[0], 'fresh live');
+  assert.equal(rendered.at(-1), ctx.state.livePayload);
+  assert.deepEqual(receivedEtags, [undefined, '"live-v1"', '"live-v1"']);
 });
