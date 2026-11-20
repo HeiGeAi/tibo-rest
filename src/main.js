@@ -20,6 +20,7 @@ const state = {
   payload: null,
   source: "none",
   etag: null,
+  livePayload: null,
   lampDimmed: false,
 };
 
@@ -322,39 +323,53 @@ async function fetchJson(url, opts = {}) {
   return { data, res };
 }
 
+let loadGeneration = 0;
+
 async function loadData({ silent = false } = {}) {
+  const generation = ++loadGeneration;
+  const isCurrent = () => generation === loadGeneration;
   $("refresh-btn").disabled = true;
   try {
     const headers = { Accept: "application/json" };
-    if (state.etag) headers["If-None-Match"] = state.etag;
+    if (state.etag && state.livePayload != null) headers["If-None-Match"] = state.etag;
     const live = await fetchJson(API_URL, {
       headers,
       mode: "cors",
       cache: "no-cache",
     });
+    // A later manual refresh or poll owns all state, feedback and button updates.
+    if (!isCurrent()) return;
     if (live.notModified) {
+      if (state.livePayload == null) throw new Error("HTTP 304 without a cached live payload");
+      state.payload = state.livePayload;
+      state.source = "live";
+      renderStatus(state.payload);
       if (!silent) toast("Radar already fresh");
       return;
     }
+    state.livePayload = live.data;
     state.payload = live.data;
     state.source = "live";
     state.etag = live.res.headers.get("ETag");
     renderStatus(state.payload);
     if (!silent) toast("Radar updated");
   } catch (err) {
+    if (!isCurrent()) return;
     console.warn("live API failed", err);
     try {
       const fb = await fetchJson(FALLBACK_URL, { cache: "no-cache" });
+      if (!isCurrent()) return;
       state.payload = fb.data;
       state.source = "fallback";
       renderStatus(state.payload);
       if (!silent) toast("Live API unavailable · using snapshot");
     } catch (err2) {
+      if (!isCurrent()) return;
       console.error(err2);
       if (!silent) toast("Could not load reset data");
     }
   } finally {
-    $("refresh-btn").disabled = false;
+    if (isCurrent()) $("refresh-btn").disabled = false;
   }
 }
 
