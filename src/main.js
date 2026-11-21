@@ -42,14 +42,31 @@ function escapeHtml(s) {
     .replaceAll('"', "&quot;");
 }
 
+function safeHttpUrl(raw) {
+  if (typeof raw !== "string" || !raw.trim()) return "";
+  try {
+    const parsed = new URL(raw.trim());
+    if (parsed.protocol === "http:" || parsed.protocol === "https:") {
+      return parsed.href;
+    }
+  } catch {
+    // Reject malformed or non-HTTP(S) URLs
+  }
+  return "";
+}
+
+function isValidDate(d) {
+  return d instanceof Date && !Number.isNaN(d.getTime());
+}
+
 function parseTs(s) {
-  if (!s) return null;
+  if (s == null || s === "") return null;
   const d = new Date(s);
-  return Number.isNaN(d.getTime()) ? null : d;
+  return isValidDate(d) ? d : null;
 }
 
 function fmtBeijing(d) {
-  if (!d) return "—";
+  if (!isValidDate(d)) return "—";
   return new Intl.DateTimeFormat("zh-CN", {
     timeZone: "Asia/Shanghai",
     year: "numeric",
@@ -62,7 +79,7 @@ function fmtBeijing(d) {
 }
 
 function hoursAgo(d) {
-  if (!d) return null;
+  if (!isValidDate(d)) return null;
   return (Date.now() - d.getTime()) / 36e5;
 }
 
@@ -77,7 +94,7 @@ function relativeRest(d) {
 
 /** Lobby-sign hero clock: "12h 34m" / "2d 5h" / "18m" */
 function lobbyClock(d) {
-  if (!d) return "—";
+  if (!isValidDate(d)) return "—";
   const ms = Math.max(0, Date.now() - d.getTime());
   const totalMin = Math.floor(ms / 60000);
   const days = Math.floor(totalMin / 1440);
@@ -89,20 +106,21 @@ function lobbyClock(d) {
 }
 
 function eventTime(e) {
-  return parseTs(e.confirmedAt) || parseTs(e.createdAt) || parseTs(e.updatedAt);
+  return parseTs(e?.confirmedAt) || parseTs(e?.createdAt) || parseTs(e?.updatedAt);
 }
 
 function primaryPost(e) {
-  const posts = Array.isArray(e.posts) ? e.posts.slice() : [];
+  const posts = Array.isArray(e?.posts) ? e.posts.slice() : [];
   posts.sort((a, b) =>
-    String(b.publishedAt || "").localeCompare(String(a.publishedAt || ""))
+    String(b?.publishedAt || "").localeCompare(String(a?.publishedAt || ""))
   );
   return posts[0] || null;
 }
 
 function latestDirectReset(events) {
-  const directs = (events || []).filter(
-    (e) => e.type === "direct_reset" && (e.status === "confirmed" || e.confirmedAt)
+  const list = Array.isArray(events) ? events : [];
+  const directs = list.filter(
+    (e) => e && e.type === "direct_reset" && (e.status === "confirmed" || e.confirmedAt)
   );
   directs.sort((a, b) => {
     const ta = eventTime(a)?.getTime() || 0;
@@ -130,14 +148,23 @@ function openTweet(text) {
 
 function loadPrayers() {
   try {
-    return JSON.parse(localStorage.getItem(PRAYER_KEY) || "[]");
+    const parsed = JSON.parse(localStorage.getItem(PRAYER_KEY) || "[]");
+    if (!Array.isArray(parsed)) return [];
+    return parsed.filter(
+      (p) => p && typeof p.text === "string" && parseTs(p.at) !== null
+    );
   } catch {
     return [];
   }
 }
 
 function savePrayers(list) {
-  localStorage.setItem(PRAYER_KEY, JSON.stringify(list.slice(0, 40)));
+  try {
+    localStorage.setItem(PRAYER_KEY, JSON.stringify(list.slice(0, 40)));
+    return true;
+  } catch {
+    return false;
+  }
 }
 
 function renderPrayers() {
@@ -151,7 +178,7 @@ function renderPrayers() {
     .map(
       (p) =>
         `<li>${escapeHtml(p.text)}<span class="when">${escapeHtml(
-          fmtBeijing(new Date(p.at))
+          fmtBeijing(parseTs(p.at))
         )} · Beijing</span></li>`
     )
     .join("");
@@ -160,18 +187,27 @@ function renderPrayers() {
 
 function loadVigil() {
   try {
-    return JSON.parse(localStorage.getItem(VIGIL_KEY) || "null");
+    const parsed = JSON.parse(localStorage.getItem(VIGIL_KEY) || "null");
+    if (!parsed || typeof parsed !== "object" || parseTs(parsed.at) === null) {
+      return null;
+    }
+    return parsed;
   } catch {
     return null;
   }
 }
 
 function saveVigil(stamp) {
-  if (!stamp) {
-    localStorage.removeItem(VIGIL_KEY);
-    return;
+  try {
+    if (!stamp) {
+      localStorage.removeItem(VIGIL_KEY);
+      return true;
+    }
+    localStorage.setItem(VIGIL_KEY, JSON.stringify(stamp));
+    return true;
+  } catch {
+    return false;
   }
-  localStorage.setItem(VIGIL_KEY, JSON.stringify(stamp));
 }
 
 function renderVigil() {
@@ -188,14 +224,16 @@ function renderVigil() {
     return;
   }
   card?.classList.add("is-active");
-  const since = relativeRest(new Date(stamp.at));
+  const stampedAt = parseTs(stamp.at);
+  const since = relativeRest(stampedAt);
   status.textContent = `resting · ${since}`;
-  meta.textContent = `Stamped ${fmtBeijing(new Date(stamp.at))} Beijing · local only`;
+  meta.textContent = `Stamped ${fmtBeijing(stampedAt)} Beijing · local only`;
   btn.textContent = "Clear stamp";
 }
 
 function renderTimeline(events) {
-  const sorted = (events || []).slice().sort((a, b) => {
+  const list = Array.isArray(events) ? events.filter(Boolean) : [];
+  const sorted = list.slice().sort((a, b) => {
     const ta = eventTime(a)?.getTime() || 0;
     const tb = eventTime(b)?.getTime() || 0;
     return tb - ta;
@@ -214,12 +252,12 @@ function renderTimeline(events) {
       const badge = e.type === "direct_reset" ? "RESET" : "CARD";
       const body =
         (post && (post.originalText || post.text)) || e.title || e.label || "";
-      const xUrl = post?.url || "";
-      const aihotUrl = e.url || CONFIG.aihotCalendar;
+      const xUrl = safeHttpUrl(post?.url);
+      const aihotUrl = safeHttpUrl(e.url) || safeHttpUrl(CONFIG.aihotCalendar);
       return `<li class="event">
           <div class="badge ${badgeClass}">${badge}</div>
           <div>
-            <div class="title">${escapeHtml(e.title || e.label || e.type)}</div>
+            <div class="title">${escapeHtml(e.title || e.label || e.type || "")}</div>
             <div class="body">${escapeHtml(body)}</div>
             <div class="mono">${escapeHtml(fmtBeijing(when))} · Beijing${
               e.scope ? " · " + escapeHtml(e.scope) : ""
@@ -227,10 +265,14 @@ function renderTimeline(events) {
             <div class="links">
               ${
                 xUrl
-                  ? `<a href="${escapeHtml(xUrl)}" target="_blank" rel="noopener">X post</a>`
+                  ? `<a href="${escapeHtml(xUrl)}" target="_blank" rel="noopener noreferrer">X post</a>`
                   : ""
               }
-              <a href="${escapeHtml(aihotUrl)}" target="_blank" rel="noopener">AIHOT</a>
+              ${
+                aihotUrl
+                  ? `<a href="${escapeHtml(aihotUrl)}" target="_blank" rel="noopener noreferrer">AIHOT</a>`
+                  : ""
+              }
             </div>
           </div>
         </li>`;
@@ -264,7 +306,7 @@ function tweetRestLabel() {
 }
 
 function renderStatus(payload) {
-  const events = payload?.events || [];
+  const events = Array.isArray(payload?.events) ? payload.events : [];
   const latest = latestDirectReset(events);
   const post = latest ? primaryPost(latest) : null;
   const when = latest ? eventTime(latest) : null;
@@ -406,14 +448,20 @@ function wireUi() {
     }
     const list = loadPrayers();
     list.unshift({ text: text.slice(0, 200), at: Date.now() });
-    savePrayers(list);
+    if (!savePrayers(list)) {
+      toast("Could not save locally");
+      return;
+    }
     $("pray-input").value = "";
     renderPrayers();
     toast("Prayer saved locally");
   });
 
   $("clear-prayers-btn").addEventListener("click", () => {
-    savePrayers([]);
+    if (!savePrayers([])) {
+      toast("Could not clear local prayers");
+      return;
+    }
     renderPrayers();
     toast("Local prayers cleared");
   });
@@ -421,12 +469,18 @@ function wireUi() {
   $("vigil-btn").addEventListener("click", () => {
     const existing = loadVigil();
     if (existing) {
-      saveVigil(null);
+      if (!saveVigil(null)) {
+        toast("Could not clear local stamp");
+        return;
+      }
       renderVigil();
       toast("Vigil stamp cleared");
       return;
     }
-    saveVigil({ at: Date.now() });
+    if (!saveVigil({ at: Date.now() })) {
+      toast("Could not save local stamp");
+      return;
+    }
     renderVigil();
     toast("You’re resting · local stamp set");
     if (!prefersReducedMotion()) {
